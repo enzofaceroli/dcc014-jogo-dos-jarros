@@ -32,7 +32,7 @@ class Estado {
         Estado* esvaziaJarro(int n);
         Estado* transfere12();
         Estado* transfere21();
-        void gerarProximosEstados();
+        vector<Estado*>& gerarProximosEstados();
         void printEstado();
 };
 

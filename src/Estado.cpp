@@ -63,7 +63,7 @@ Estado* Estado::encheJarro(int n) {
         jarro->encherJarro();
     } else {
         cout << "Selecione um jarro valido" << endl; 
-        exit(0);
+        return NULL;
     }
 
     return novoEstado;
@@ -80,7 +80,7 @@ Estado* Estado::esvaziaJarro(int n) {
         jarro->esvaziarJarro();
     } else {
         cout << "Selecione um jarro valido" << endl; 
-        exit(0);
+        return NULL;
     }
 
     return novoEstado;
@@ -92,7 +92,7 @@ Estado* Estado::transfere12() {
     Jarro* jarro2 = novoEstado->jarros.second;
 
     if(jarro1->vazio() || jarro2->cheio()) {
-        exit(0);
+        return NULL;
     }
 
     int quantidadeTransferir; 
@@ -118,8 +118,8 @@ Estado* Estado::transfere21() {
     Jarro* jarro1 = novoEstado->jarros.first;
     Jarro* jarro2 = novoEstado->jarros.second;
 
-    if(jarro1->vazio() || jarro2->cheio()) {
-        exit(0);
+    if(jarro2->vazio() || jarro1->cheio()) {
+        return NULL;
     }
 
     int quantidadeTransferir; 
@@ -140,8 +140,29 @@ Estado* Estado::transfere21() {
     return novoEstado;
 } 
 
-void Estado::gerarProximosEstados() {
+vector<Estado*>& Estado::gerarProximosEstados() {
+    vector<Estado*> proximosEstados;
+    Estado* e;
+
+    Estado* e = this->encheJarro(1);
+    proximosEstados.push_back(e); 
+
+    Estado* e = this->encheJarro(2);
+    proximosEstados.push_back(e); 
     
+    Estado* e = this->esvaziaJarro(1);
+    proximosEstados.push_back(e); 
+
+    Estado* e = this->esvaziaJarro(2);
+    proximosEstados.push_back(e);
+
+    Estado* e = this->transfere12();
+    proximosEstados.push_back(e); 
+
+    Estado* e = this->transfere21();
+    proximosEstados.push_back(e);
+
+    return proximosEstados;
 }
 
 void Estado::printEstado() {
