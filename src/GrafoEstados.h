@@ -27,6 +27,8 @@ class GrafoEstados {
         void breadthFirstSearch();
         void buscaOrdenada();
         void buscaGulosa();
+        void buscaAAST();
+        void buscaIDAAST();
 };
 
 #endif
