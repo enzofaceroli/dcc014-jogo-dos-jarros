@@ -2,6 +2,7 @@
 #include "Jarro.h"
 #include <iostream> 
 #include <vector>
+#include <map>
 
 using namespace std; 
 
@@ -75,8 +76,20 @@ int Estado::getConteudoTotal() {
     return total;
 }
 
+int Estado::getValorHeuristica() {
+    return this->valorHeuristica;
+}
+
+int Estado::getCustoRaiz() {
+    return this->custoRaiz;
+}
+
 vector<Jarro*>&Estado::getJarros() {
     return this->jarros;
+}
+
+void Estado::setCustoRaiz(int custoRaiz) {
+    this->custoRaiz = custoRaiz;
 }
 
 Estado* Estado::encheJarro(int n) {
@@ -139,6 +152,32 @@ Estado* Estado::transfereJarros(int n1, int n2) {
     return novoEstado;
 }
 
+Estado* Estado::geraPrimeiroEstadoValido() {
+    for(int i = 0; i < qtdeJarros; i++) {
+        if(this->encheJarro(i) != NULL) {
+            return this->encheJarro(i);
+        }
+    }
+
+    for(int i = 0; i < qtdeJarros; i++) {
+        if(this->esvaziaJarro(i) != NULL) {
+            return this->esvaziaJarro(i);
+        }
+    }
+
+    for(int i = 0; i < qtdeJarros; i++) {
+        for(int j = 0; j < qtdeJarros; j++) {
+            if(i != j) {
+                if(this->transfereJarros(i, j) != NULL) {
+                    return this->transfereJarros(i, j);
+                }
+            }
+        }
+    }
+
+    return NULL; 
+}
+
 vector<Estado*>& Estado::gerarProximosEstados() {
     vector<Estado*> proximosEstados;
     Estado* e;
@@ -171,6 +210,50 @@ vector<Estado*>& Estado::gerarProximosEstados() {
     return proximosEstados;
 }
 
+vector<pair<Estado*, int>>& Estado::gerarProximosEstadosPonderado() {
+    vector<pair<Estado*, int>> proximosEstadosPonderados;
+    Estado* e;
+
+    int custo;
+    int custoTotal;
+
+    for(int i = 0; i < qtdeJarros; i++) {
+        e = this->encheJarro(i);
+        custo = this->calculaPesoAresta(e);
+        pair<Estado*, int> proxEstadoPonderado(e, custo);
+        
+        if(e != NULL) {
+            proximosEstadosPonderados.push_back(proxEstadoPonderado);
+        }
+    }
+
+    for(int i = 0; i < qtdeJarros; i++) {
+        e = this->esvaziaJarro(i);
+        custo = this->calculaPesoAresta(e);
+        pair<Estado*, int> proxEstadoPonderado(e, custo);
+
+        if(e != NULL) {
+            proximosEstadosPonderados.push_back(proxEstadoPonderado);
+        }
+    }
+
+    for(int i = 0; i < qtdeJarros; i++) {
+        for(int j = 0; j < qtdeJarros; j++) {
+            if(i != j) {
+                e = this->transfereJarros(i, j);
+                custo = this->calculaPesoAresta(e);
+                pair<Estado*, int> proxEstadoPonderado(e, custo);
+
+                if(e != NULL) {
+                    proximosEstadosPonderados.push_back(proxEstadoPonderado);
+                }
+            }
+        }
+    }
+
+    return proximosEstadosPonderados;
+}
+
 void Estado::printEstado() {
     cout << "(" << this->getJarros()[0]->getConteudo();
     for(int i = 1; i < qtdeJarros; i++) {
@@ -180,15 +263,23 @@ void Estado::printEstado() {
     cout << ")" << endl;
 }
 
-int Estado::calculaValorHeuristica(int obj) {
-    int valorHeuristica = INT64_MAX;
-    for(int i = 0; i < qtdeJarros; i++) {
-        int conteudoJarro = this->getJarros()[i]->getConteudo();
-        int distanciaObjetivo = abs(conteudoJarro - obj);
+int Estado::calculaValorHeuristica(Estado* e, int obj, bool considerarAresta, bool considerarEstado) {
+    if(considerarAresta && !considerarEstado) {
+        return abs(this->getConteudoTotal() - e->getConteudoTotal());
+    }
 
-        if(distanciaObjetivo < valorHeuristica) {
-            valorHeuristica = distanciaObjetivo;
+    if(considerarEstado && !considerarAresta) {
+        int valorHeuristica = INT64_MAX;
+        for(int i = 0; i < qtdeJarros; i++) {
+            int conteudoJarro = this->getJarros()[i]->getConteudo();
+            int distanciaObjetivo = abs(conteudoJarro - obj);
+
+            if(distanciaObjetivo < valorHeuristica) {
+                valorHeuristica = distanciaObjetivo;
+            }
         }
+
+        return valorHeuristica;
     }
 }
 

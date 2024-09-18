@@ -28,16 +28,28 @@ class Estado {
         int getConteudo(int n);
         int getMaiorCapacidade();
         int getConteudoTotal();
+        int getValorHeuristica();
+        int getCustoRaiz();
         vector<Jarro*>& getJarros();
+
+        // Set
+        void setCustoRaiz(int custoRaiz);
 
         // Outros
         Estado* encheJarro(int n);
         Estado* esvaziaJarro(int n);
         Estado* transfereJarros(int n1, int n2);
+        Estado* geraPrimeiroEstadoValido();
         vector<Estado*>& gerarProximosEstados();
+        vector<pair<Estado*, int>>& gerarProximosEstadosPonderado();
         void printEstado();
-        int calculaValorHeuristica(int obj);
         int calculaPesoAresta(Estado* e);
+        int calculaValorHeuristica(Estado* e, int obj, bool considerarAresta, bool considerarEstado);
+
+        bool operator<(const Estado& e) {
+           return this->valorHeuristica < e.valorHeuristica;   
+        }
+
 };
 
 

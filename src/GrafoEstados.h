@@ -2,7 +2,6 @@
 #define GRAFOESTADOS_H
 #include "Jarro.h"
 #include "Estado.h"
-#include "Aresta.h"
 #include <iostream>
 #include <vector>
 #include <map>
@@ -12,8 +11,9 @@ using namespace std;
 class GrafoEstados {
     private:
         Estado* estadoInicial;
-        map<Estado*, vector<Estado*>> listaAdjEstados;
-        map<Estado*, vector<Aresta*>> listaArestas;
+
+        // Mapa que liga estados e o custo da ligacao
+        map<Estado*, vector<pair<Estado*,int>>> listaAdj;
 
     public:
         GrafoEstados();
@@ -26,6 +26,7 @@ class GrafoEstados {
         void depthFirstSearch(int profundidadeMaxima);
         void breadthFirstSearch();
         void buscaOrdenada();
+        void buscaGulosa();
 };
 
 #endif
