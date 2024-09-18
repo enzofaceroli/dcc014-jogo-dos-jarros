@@ -1,7 +1,8 @@
 #ifndef GRAFOESTADOS_H
 #define GRAFOESTADOS_H
-#include <Jarro.h>
-#include <Estado.h>
+#include "Jarro.h"
+#include "Estado.h"
+#include "Aresta.h"
 #include <iostream>
 #include <vector>
 #include <map>
@@ -12,20 +13,19 @@ class GrafoEstados {
     private:
         Estado* estadoInicial;
         map<Estado*, vector<Estado*>> listaAdjEstados;
+        map<Estado*, vector<Aresta*>> listaArestas;
 
     public:
         GrafoEstados();
 
-        GrafoEstados(Estado* estadoInicial);   
+        GrafoEstados(int qtdeJarros, int obj);   
 
         ~GrafoEstados();
 
-        void adicionarEstado(Estado* estado);
-        void removerEstado(Estado* estado);
-
         void backtracking();
-        void depthFirstSearch();
+        void depthFirstSearch(int profundidadeMaxima);
         void breadthFirstSearch();
+        void buscaOrdenada();
 };
 
 #endif

@@ -2,22 +2,23 @@
 #define ESTADO_H
 #include <Jarro.h>
 #include <iostream> 
-#include <utility>
+#include <vector>
 
 using namespace std; 
 
 class Estado {
     private:
         bool estadoFinal;
+        int qtdeJarros; 
+        vector<Jarro*> jarros;
 
-        pair<Jarro*, Jarro*> jarros;
-        
-        vector<Estado*> estadosSeguintes;
+        int custoRaiz;
+        int valorHeuristica;
 
     public: 
         Estado();
 
-        Estado(int cap1, int cap2, int cont1, int cont2, int obj);
+        Estado(int qtdeJarros, int obj);
 
         ~Estado(); 
 
@@ -26,14 +27,17 @@ class Estado {
         int getCapacidade(int n);
         int getConteudo(int n);
         int getMaiorCapacidade();
+        int getConteudoTotal();
+        vector<Jarro*>& getJarros();
 
         // Outros
         Estado* encheJarro(int n);
         Estado* esvaziaJarro(int n);
-        Estado* transfere12();
-        Estado* transfere21();
+        Estado* transfereJarros(int n1, int n2);
         vector<Estado*>& gerarProximosEstados();
         void printEstado();
+        int calculaValorHeuristica(int obj);
+        int calculaPesoAresta(Estado* e);
 };
 
 

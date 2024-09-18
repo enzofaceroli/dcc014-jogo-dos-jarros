@@ -5,17 +5,41 @@
 
 using namespace std; 
 
-Estado::Estado(int cap1, int cap2, int cont1, int cont2, int obj) {
-    estadoFinal = false;
+Estado::Estado(int qtdeJarros, int obj) {
+    this->estadoFinal = false;
+    this->qtdeJarros = qtdeJarros;
+    this->custoRaiz = 0;
 
-    Jarro* jarro1 = new Jarro(cap1, cont1);
-    Jarro* jarro2 = new Jarro(cap2, cont2);
+    Jarro* jarro = new Jarro();
 
-    if(jarro1->getConteudo() == obj || jarro2->getConteudo() == obj) {
-        estadoFinal = true;
+    for(int i = 0; i < qtdeJarros; i++) {
+        int cap;
+        int cont;
+
+        cout << "Selecione a capacidade do jarro " << i << ": ";
+        cin >> cap;
+        cout << endl;
+
+        cout << "Selecione o conteudo inicial do jarro " << i << ": ";
+        cin >> cont;
+        cout << endl;
+
+        jarro->setCapacidade(cap);
+        jarro->setConteudo(cont);
+
+        Jarro* aux = jarro;
+        this->jarros.push_back(aux);
     }
 
-    jarros = make_pair(jarro1, jarro2);
+    for(int i = 0; i < qtdeJarros; i++) {
+        if(jarros[i]->getConteudo() == obj) {
+            this->estadoFinal = true;
+        }
+    }
+
+    delete jarro;
+
+    this->valorHeuristica = this->calculaValorHeuristica(obj);
 }
 
 bool Estado::ehEstadoFinal() {
@@ -23,47 +47,49 @@ bool Estado::ehEstadoFinal() {
 }
 
 int Estado::getCapacidade(int n) {
-    if(n == 1) {
-        return this->jarros.first->getCapacidade();
-    }
-
-    if (n == 2) {
-        return this->jarros.second->getCapacidade();
+    if(n < 0 || n >= this->qtdeJarros) {
+        return this->jarros[n]->getCapacidade();
     }
 
     cout << "Selecione um jarro valido" << endl;
-    exit(0);
 }
 
 int Estado::getConteudo(int n) {
-    if(n == 1) {
-        return this->jarros.first->getConteudo();
+    if(n < 0 || n >= this->qtdeJarros) {
+        cout << "Selecione um jarro valido" << endl;        
     }
 
-    if (n == 2) {
-        return this->jarros.second->getConteudo();
-    }
-
-    cout << "Selecione um jarro valido" << endl;
-    exit(0);
+    return this->jarros[n]->getConteudo();
 }
 
 int Estado::getMaiorCapacidade() {
     return (this->getConteudo(1) >= this->getConteudo(2) ? this->getConteudo(1) : this->getConteudo(2));
 }
 
+int Estado::getConteudoTotal() {
+    int total = 0;
+    for(int i = 0; i < this->jarros.size(); i++) {
+        total = total + this->jarros[i]->getConteudo();
+    }
+
+    return total;
+}
+
+vector<Jarro*>&Estado::getJarros() {
+    return this->jarros;
+}
+
 Estado* Estado::encheJarro(int n) {
     Estado* novoEstado = this; 
 
-    if (n == 1) {
-        Jarro* jarro = novoEstado->jarros.first;
-        jarro->encherJarro();
-    } else if (n == 2) {
-        Jarro* jarro = novoEstado->jarros.second;
-        jarro->encherJarro();
+    if(n < 0 || n >= this->qtdeJarros) {
+        cout << "Selecione um jarro valido" << endl;    
+        novoEstado = NULL;    
+    } else if(this->jarros[n]->cheio()) {
+        cout << "Jarro ja esta cheio" << endl;
+        novoEstado = NULL;
     } else {
-        cout << "Selecione um jarro valido" << endl; 
-        return NULL;
+        novoEstado->getJarros()[n]->encherJarro();
     }
 
     return novoEstado;
@@ -72,24 +98,24 @@ Estado* Estado::encheJarro(int n) {
 Estado* Estado::esvaziaJarro(int n) {
     Estado* novoEstado = this; 
 
-    if (n == 1) {
-        Jarro* jarro = novoEstado->jarros.first;
-        jarro->esvaziarJarro();
-    } else if (n == 2) {
-        Jarro* jarro = novoEstado->jarros.second;
-        jarro->esvaziarJarro();
+    if(n < 0 || n >= this->qtdeJarros) {
+        cout << "Selecione um jarro valido" << endl;    
+        novoEstado = NULL;    
+    } else if(this->jarros[n]->vazio()) {
+        cout << "Jarro ja esta vazio" << endl;
+        novoEstado = NULL;
     } else {
-        cout << "Selecione um jarro valido" << endl; 
-        return NULL;
+        novoEstado->getJarros()[n]->esvaziarJarro();
     }
 
     return novoEstado;
 } 
 
-Estado* Estado::transfere12() {
+Estado* Estado::transfereJarros(int n1, int n2) {
     Estado* novoEstado = this;
-    Jarro* jarro1 = novoEstado->jarros.first;
-    Jarro* jarro2 = novoEstado->jarros.second;
+
+    Jarro* jarro1 = novoEstado->getJarros()[n1];
+    Jarro* jarro2 = novoEstado->getJarros()[n2];
 
     if(jarro1->vazio() || jarro2->cheio()) {
         return NULL;
@@ -111,60 +137,61 @@ Estado* Estado::transfere12() {
     jarro2->setConteudo(jarro2->getConteudo() + quantidadeTransferir);
 
     return novoEstado;
-}   
-
-Estado* Estado::transfere21() {
-    Estado* novoEstado = this;
-    Jarro* jarro1 = novoEstado->jarros.first;
-    Jarro* jarro2 = novoEstado->jarros.second;
-
-    if(jarro2->vazio() || jarro1->cheio()) {
-        return NULL;
-    }
-
-    int quantidadeTransferir; 
-
-    // Se conteudo jarro 2 < espaco vazio => transferir conteudo jarro 2 
-    if(jarro2->getConteudo() <= jarro1->getEspacoVazio()) {
-        quantidadeTransferir = jarro2->getConteudo();
-    }
-
-    // Se conteudo jarro 2 > espaço vazio => transferir espaco vazio
-    if(jarro2->getConteudo() > jarro1->getEspacoVazio()) {
-        quantidadeTransferir = jarro1->getEspacoVazio();
-    }
-
-    jarro2->setConteudo(jarro2->getConteudo() - quantidadeTransferir);
-    jarro1->setConteudo(jarro1->getConteudo() + quantidadeTransferir);
-
-    return novoEstado;
-} 
+}
 
 vector<Estado*>& Estado::gerarProximosEstados() {
     vector<Estado*> proximosEstados;
     Estado* e;
 
-    Estado* e = this->encheJarro(1);
-    proximosEstados.push_back(e); 
+    for(int i = 0; i < qtdeJarros; i++) {
+        e = this->encheJarro(i);
+        if(e != NULL) {
+            proximosEstados.push_back(e);
+        }
+    }
 
-    Estado* e = this->encheJarro(2);
-    proximosEstados.push_back(e); 
-    
-    Estado* e = this->esvaziaJarro(1);
-    proximosEstados.push_back(e); 
+    for(int i = 0; i < qtdeJarros; i++) {
+        e = this->esvaziaJarro(i);
+        if(e != NULL) {
+            proximosEstados.push_back(e);
+        }
+    }
 
-    Estado* e = this->esvaziaJarro(2);
-    proximosEstados.push_back(e);
-
-    Estado* e = this->transfere12();
-    proximosEstados.push_back(e); 
-
-    Estado* e = this->transfere21();
-    proximosEstados.push_back(e);
+    for(int i = 0; i < qtdeJarros; i++) {
+        for(int j = 0; j < qtdeJarros; j++) {
+            if(i != j) {
+                e = this->transfereJarros(i, j);
+                if(e != NULL) {
+                    proximosEstados.push_back(e);
+                }
+            }
+        }
+    }
 
     return proximosEstados;
 }
 
 void Estado::printEstado() {
-    cout << "(" << this->jarros.first->getConteudo() << ", " << this->jarros.second->getConteudo() << ")" << endl;
+    cout << "(" << this->getJarros()[0]->getConteudo();
+    for(int i = 1; i < qtdeJarros; i++) {
+        cout << ", ";
+        this->getJarros()[i]->getConteudo();
+    }
+    cout << ")" << endl;
+}
+
+int Estado::calculaValorHeuristica(int obj) {
+    int valorHeuristica = INT64_MAX;
+    for(int i = 0; i < qtdeJarros; i++) {
+        int conteudoJarro = this->getJarros()[i]->getConteudo();
+        int distanciaObjetivo = abs(conteudoJarro - obj);
+
+        if(distanciaObjetivo < valorHeuristica) {
+            valorHeuristica = distanciaObjetivo;
+        }
+    }
+}
+
+int Estado::calculaPesoAresta(Estado* e) {
+    return abs(this->getConteudoTotal() - e->getConteudoTotal());
 }
