@@ -23,7 +23,7 @@ class GrafoEstados {
         ~GrafoEstados();
 
         void backtracking();
-        void depthFirstSearch(int profundidadeMaxima);
+        void depthFirstSearch();
         void breadthFirstSearch();
         void buscaOrdenada();
         void buscaGulosa();
