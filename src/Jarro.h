@@ -16,7 +16,7 @@ class Jarro {
 
         Jarro(int capacidade, int conteudo);
 
-        ~Jarro();
+        ~Jarro() {};
 
         // Set
         void setCapacidade(int capacidade);

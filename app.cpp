@@ -20,7 +20,9 @@ int main () {
     g->backtracking();
     g->breadthFirstSearch();
     g->depthFirstSearch();
+    g->buscaOrdenada();
     g->buscaGulosa();
+    g->buscaAAST();
 
     return 0;
 }

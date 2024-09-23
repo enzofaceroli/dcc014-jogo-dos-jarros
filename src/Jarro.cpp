@@ -20,7 +20,7 @@ Jarro::Jarro(int capacidade, int conteudo) {
 
 // Métodos de set
 void Jarro::setCapacidade(int capacidade) {
-    if (capacidade <= 0) {
+    if (capacidade < 0) {
         cout << "Nao eh possivel gerar jarro com essa capacidade" << endl;
         cout << "Selecione uma capacidade maior: ";
         cin >> capacidade; 
@@ -33,7 +33,7 @@ void Jarro::setCapacidade(int capacidade) {
 }
 
 void Jarro::setConteudo(int conteudo) {
-    if (conteudo <= 0 || conteudo + this->getConteudo() > this->getCapacidade()) {
+    if (conteudo < 0 || conteudo > this->getCapacidade()) {
         cout << "Operacao invalida: nao eh possivel setar esse conteudo" << endl; 
     } else {
         this->conteudo = conteudo;

@@ -10,10 +10,13 @@
 
 using namespace std;
 
+
+typedef pair<Estado*, int> pd;
+
 struct myComp {
     constexpr bool operator()(
-        pair<int, int> const& a,
-        pair<int, int> const& b)
+        pair<Estado*, int> const& a,
+        pair<Estado*, int> const& b)
         const noexcept
     {
         return a.second > b.second;
@@ -44,17 +47,12 @@ GrafoEstados::GrafoEstados(int qtdeJarros, int obj) {
                 listaAdj[aux] = aux->gerarProximosEstadosPonderado(obj);
                 estadosAdicionar.push(aux);
             } 
-            // Se eles forem iguais em jarros, mas se diferirem em custo, 
-            // else {
-            //     if(aux->getCustoRaiz() < listaAdj.find(aux)->first->getCustoRaiz()) {
-            //         listaAdj.find(aux)->first->setCustoRaiz(aux->getCustoRaiz());
-            //     }
-            // }
         }
     }
 }
 
 void GrafoEstados::backtracking() {
+    cout << "Iniciando backtracking" << endl;
     Estado* e = this->estadoInicial;
     Estado* anterior = NULL;
 
@@ -80,10 +78,12 @@ void GrafoEstados::backtracking() {
         anterior = e;
         for(int i = 0; i < this->listaAdj[e].size(); i++) {
             Estado* aux = this->listaAdj[e][i].first;
-            if(estadosVisitados.find(aux) == estadosVisitados.end() || estadosVisitados[aux] != true) {
+            if(estadosVisitados[aux] != true) {
                 e = aux;
                 profundidade++;
                 qtdeEstadosVisitados++;
+                cout << " -> ";
+                e->printEstado();
                 break;
             }
         }
@@ -107,6 +107,8 @@ void GrafoEstados::backtracking() {
 }
 
 void GrafoEstados::depthFirstSearch() {
+    cout << "Iniciando DFS" << endl;
+
     int profundidadeMaxima;
     
     cout << "Insira profundidade maxima: " << endl;
@@ -171,6 +173,8 @@ void GrafoEstados::depthFirstSearch() {
 }
 
 void GrafoEstados::breadthFirstSearch() {
+    cout << "Iniciando BFS" << endl;
+
     Estado* e = this->estadoInicial;
     int profundidade = 0;
     int qtdeEstadosVisitados = 0;
@@ -227,6 +231,8 @@ void GrafoEstados::breadthFirstSearch() {
 }
 
 void GrafoEstados::buscaOrdenada() {
+        cout << "Iniciando ordenada" << endl;
+
     Estado* e = this->estadoInicial;
     Estado* objetivoMenorCusto = NULL;
     int qtdeEstadosVisitados = 0;
@@ -236,18 +242,18 @@ void GrafoEstados::buscaOrdenada() {
 
     for(auto it = listaAdj.cbegin(); it != listaAdj.cend(); it++) {
         Estado* e = it->first;
-        estadosVisitados[e] = INT64_MAX;
+        estadosVisitados[e] = INT16_MAX;
     }
 
-    priority_queue<pair<Estado*, int>, myComp> estadosVisitar; 
+    priority_queue<pd, vector<pd>, myComp> estadosVisitar; 
 
     estadosVisitados[e] = 0;
     qtdeEstadosVisitados++;
 
-    estadosVisitar.push(e);
+    estadosVisitar.push(make_pair(e, 0));
 
     while(!estadosVisitar.empty()) {
-        e = estadosVisitar.top();
+        e = estadosVisitar.top().first;
         estadosVisitar.pop();
 
         if(e->ehEstadoFinal()) {
@@ -280,6 +286,8 @@ void GrafoEstados::buscaOrdenada() {
 }
 
 void GrafoEstados::buscaGulosa() {
+    cout << "Iniciando gulosa" << endl;
+
     Estado* e = this->estadoInicial;
     int profundidade = 0;
     int qtdeEstadosVisitados = 0;
@@ -334,3 +342,57 @@ void GrafoEstados::buscaGulosa() {
     }
 }
 
+void GrafoEstados::buscaAAST() {
+    cout << "Iniciando A*" << endl;
+
+    Estado* e = this->estadoInicial;
+    Estado* objetivoMenorCusto = NULL;
+    int qtdeEstadosVisitados = 0;
+
+    // Mapa de estados visitados e o custo para visita-los
+    map<Estado*, int> estadosVisitados;
+
+    for(auto it = listaAdj.cbegin(); it != listaAdj.cend(); it++) {
+        Estado* e = it->first;
+        estadosVisitados[e] = INT16_MAX;
+    }
+
+    priority_queue<pd, vector<pd>, myComp> estadosVisitar; 
+
+    estadosVisitados[e] = 0;
+    qtdeEstadosVisitados++;
+
+    estadosVisitar.push(make_pair(e, 0));
+
+    while(!estadosVisitar.empty()) {
+        e = estadosVisitar.top().first;
+        estadosVisitar.pop();
+
+        if(e->ehEstadoFinal()) {
+            if(objetivoMenorCusto == NULL) {
+                objetivoMenorCusto = e;
+            } else {
+                if(estadosVisitados[e] < estadosVisitados[objetivoMenorCusto]) {
+                    objetivoMenorCusto = e;
+                }
+            }
+        }
+
+        vector<pair<Estado*, int>> estadosSeguintes = this->listaAdj[e];
+
+        for(int i = 0; i < estadosSeguintes.size(); i++) {
+            Estado* aux = estadosSeguintes[i].first;
+            int custo = estadosVisitados[e] + estadosSeguintes[i].second + aux->getValorHeuristica();
+
+            if(custo < estadosVisitados[aux] ) {
+                estadosVisitados[aux] = custo;
+                pair<Estado*, int> p = make_pair(aux, custo);
+                estadosVisitar.push(p);
+            }
+        }
+    }
+    
+    if(objetivoMenorCusto == NULL) {
+        cout << "O algoritmo nao encontrou solucao" << endl;
+    }
+}

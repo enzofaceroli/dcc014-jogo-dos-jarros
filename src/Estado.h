@@ -1,6 +1,6 @@
 #ifndef ESTADO_H
 #define ESTADO_H
-#include <Jarro.h>
+#include "Jarro.h"
 #include <iostream> 
 #include <vector>
 #include <string>
@@ -14,7 +14,6 @@ class Estado {
         vector<Jarro*> jarros;
 
         int valorHeuristica;
-        int pesoTotal;
 
     public: 
         Estado();
@@ -30,7 +29,6 @@ class Estado {
         int getMaiorCapacidade();
         int getConteudoTotal();
         int getValorHeuristica();
-        int getPesoTotal();
         vector<Jarro*>& getJarros();
 
         // Set
@@ -41,13 +39,10 @@ class Estado {
         Estado* encheJarro(int n);
         Estado* esvaziaJarro(int n);
         Estado* transfereJarros(int n1, int n2);
-        // Estado* geraPrimeiroEstadoValido();
-        // vector<Estado*>& gerarProximosEstados();
-        vector<pair<Estado*, int>>& gerarProximosEstadosPonderado(int obj);
+        vector<pair<Estado*, int>> gerarProximosEstadosPonderado(int obj);
         void printEstado();
         int calculaPesoAresta(Estado* e);
         int calculaValorHeuristica(int obj);
-        int calculaPesoTotal();
 
         bool operator < (const Estado& e) {
            return this->valorHeuristica < e.valorHeuristica;   

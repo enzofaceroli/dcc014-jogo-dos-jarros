@@ -88,10 +88,6 @@ void Estado::setValorHeuristica(int valorHeuristica) {
     this->valorHeuristica = valorHeuristica;
 }
 
-void Estado::setPesoTotal(int pesoTotal) {
-    this->pesoTotal = pesoTotal;
-}
-
 Estado* Estado::encheJarro(int n) {
     Estado* novoEstado = this; 
 
@@ -210,7 +206,7 @@ Estado* Estado::transfereJarros(int n1, int n2) {
 //     return proximosEstados;
 // }
 
-vector<pair<Estado*, int>>& Estado::gerarProximosEstadosPonderado(int obj) {
+vector<pair<Estado*, int>> Estado::gerarProximosEstadosPonderado(int obj) {
     vector<pair<Estado*, int>> proximosEstadosPonderados;
     Estado* e;
 
@@ -222,8 +218,6 @@ vector<pair<Estado*, int>>& Estado::gerarProximosEstadosPonderado(int obj) {
         custo = this->calculaPesoAresta(e);
 
         e->setValorHeuristica(e->calculaValorHeuristica(obj));
-
-        e->setPesoTotal(e->calculaPesoTotal());
 
         pair<Estado*, int> proxEstadoPonderado(e, custo);
         
@@ -237,8 +231,6 @@ vector<pair<Estado*, int>>& Estado::gerarProximosEstadosPonderado(int obj) {
         custo = this->calculaPesoAresta(e);
         
         e->setValorHeuristica(e->calculaValorHeuristica(obj));
-
-        e->setPesoTotal(e->calculaPesoTotal());
 
         pair<Estado*, int> proxEstadoPonderado(e, custo);
 
@@ -254,8 +246,6 @@ vector<pair<Estado*, int>>& Estado::gerarProximosEstadosPonderado(int obj) {
                 custo = this->calculaPesoAresta(e);
                 
                 e->setValorHeuristica(e->calculaValorHeuristica(obj));
-
-                e->setPesoTotal(e->calculaPesoTotal());
 
                 pair<Estado*, int> proxEstadoPonderado(e, custo);
 
@@ -279,7 +269,7 @@ void Estado::printEstado() {
 }
 
 int Estado::calculaValorHeuristica(int obj) {
-    int valorHeuristica = INT64_MAX;
+    int valorHeuristica = INT16_MAX;
     for(int i = 0; i < qtdeJarros; i++) {
         int conteudoJarro = this->getJarros()[i]->getConteudo();
         int distanciaObjetivo = abs(conteudoJarro - obj);
@@ -294,7 +284,3 @@ int Estado::calculaValorHeuristica(int obj) {
 int Estado::calculaPesoAresta(Estado* e) {
     return abs(this->getConteudoTotal() - e->getConteudoTotal());
 }
-
-// int Estado::calculaPesoTotal() {
-//     return this->getCustoRaiz() + this->getValorHeuristica(); 
-// }
